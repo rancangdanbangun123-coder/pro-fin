@@ -42,9 +42,7 @@ function getPhaseFields(stage) {
             ];
         case 'invoice':
             return [
-                { name: 'total', label: 'Total Tagihan', type: 'currency', required: true },
-                { name: 'due', label: 'Jatuh Tempo', type: 'text', required: false, placeholder: 'Cth: 24 Okt 2023' },
-                { name: 'status', label: 'Status Pembayaran', type: 'select', required: true, options: ['Unpaid', 'Dibayar Sebagian', 'Lunas'] }
+                { name: 'bills', label: 'Daftar Tagihan (Termin)', type: 'multi_bill', required: true }
             ];
         case 'do':
             return [
@@ -124,7 +122,29 @@ export default function EditItemModal({ isOpen, onClose, item, onSubmit }) {
 
             // Init phase specific data
             setTitle(item.title || '');
-            setPhaseData({ ...item });
+
+            // Format bills array if editing an invoice
+            let initialBills = [];
+            if (item.stage === 'invoice') {
+                if (item.bills && Array.isArray(item.bills) && item.bills.length > 0) {
+                    initialBills = [...item.bills];
+                } else {
+                    // Fallback for old single-invoice data
+                    initialBills = [{
+                        id: Date.now(),
+                        label: 'Tagihan 1',
+                        amount: item.total || 'Rp 0',
+                        due: item.due || '',
+                        status: item.status || 'Unpaid'
+                    }];
+                }
+            }
+
+            // Init phase specific data
+            setPhaseData({
+                ...item,
+                ...(item.stage === 'invoice' ? { bills: initialBills } : {})
+            });
             setError('');
         } else {
             setAnimateIn(false);
@@ -186,7 +206,20 @@ export default function EditItemModal({ isOpen, onClose, item, onSubmit }) {
 
         // Validate required phase form fields
         for (const field of phaseFields) {
-            if (field.required && field.name !== 'title') {
+            if (field.type === 'multi_bill') {
+                const bills = phaseData.bills || [];
+                if (bills.length === 0) {
+                    setError('Minimal harus ada 1 tagihan.');
+                    return;
+                }
+                for (const bill of bills) {
+                    const amt = parseRupiah(bill.amount);
+                    if (amt <= 0) {
+                        setError(`Jumlah untuk ${bill.label} tidak valid.`);
+                        return;
+                    }
+                }
+            } else if (field.required && field.name !== 'title') {
                 const val = phaseData[field.name];
                 if (!val || (typeof val === 'string' && val.trim() === '') || val === false || val === 0) {
                     setError(`Field "${field.label}" wajib diisi.`);
@@ -199,8 +232,20 @@ export default function EditItemModal({ isOpen, onClose, item, onSubmit }) {
         const totalEst = calculateTotal();
         const updatedTitle = phaseData.title || title;
 
+        let finalPhaseData = { ...phaseData };
+
+        // If editing invoice, calculate aggregates
+        if (item.stage === 'invoice' && finalPhaseData.bills) {
+            const sum = finalPhaseData.bills.reduce((acc, b) => acc + parseRupiah(b.amount), 0);
+            finalPhaseData.total = `Rp ${sum.toLocaleString('id-ID')}`;
+
+            const allPaid = finalPhaseData.bills.every(b => b.status === 'Lunas');
+            const allUnpaid = finalPhaseData.bills.every(b => b.status === 'Unpaid');
+            finalPhaseData.status = allPaid ? 'Lunas' : allUnpaid ? 'Unpaid' : 'Dibayar Sebagian';
+        }
+
         const returnedData = {
-            ...phaseData, // applies phase specific edits safely over the original structure mappings
+            ...finalPhaseData, // applies phase specific edits safely over the original structure mappings
             rawItems: items, // overrides with the (potentially updated) table
         };
 
@@ -472,7 +517,7 @@ export default function EditItemModal({ isOpen, onClose, item, onSubmit }) {
                             ) : null}
 
                             {phaseFields.map(field => (
-                                <div key={field.name} className={`${field.type === 'textarea' || field.type === 'multiselect' ? 'col-span-full' : ''}`}>
+                                <div key={field.name} className={`${field.type === 'textarea' || field.type === 'multiselect' || field.type === 'multi_bill' ? 'col-span-full' : ''}`}>
                                     <label className={labelClass}>{field.label}{field.required && <span className="text-red-500 ml-1">*</span>}</label>
 
                                     {field.type === 'text' && (
@@ -632,6 +677,116 @@ export default function EditItemModal({ isOpen, onClose, item, onSubmit }) {
                                                     </div>
                                                 </>
                                             )}
+                                        </div>
+                                    )}
+
+                                    {/* Multi Bill Builder */}
+                                    {field.type === 'multi_bill' && (
+                                        <div className="space-y-3 bg-white dark:bg-white/5 p-4 rounded-xl border border-slate-200 dark:border-white/10">
+                                            {(phaseData.bills || []).map((bill, index) => (
+                                                <div key={bill.id || index} className="grid grid-cols-1 md:grid-cols-12 gap-3 items-start relative group p-3 border border-slate-200 dark:border-white/10 rounded-lg hover:border-primary/50 transition-colors">
+                                                    <div className="md:col-span-3">
+                                                        <label className="block text-xs text-slate-500 mb-1">Nama Tagihan</label>
+                                                        <input
+                                                            type="text"
+                                                            className={inputClass}
+                                                            value={bill.label}
+                                                            onChange={(e) => {
+                                                                const newBills = [...phaseData.bills];
+                                                                newBills[index].label = e.target.value;
+                                                                handlePhaseDataChange('bills', newBills);
+                                                            }}
+                                                        />
+                                                    </div>
+                                                    <div className="md:col-span-3">
+                                                        <label className="block text-xs text-slate-500 mb-1">Nominal (Rp)</label>
+                                                        <input
+                                                            type="text"
+                                                            className={inputClass}
+                                                            value={bill.amount}
+                                                            onChange={(e) => {
+                                                                const newBills = [...phaseData.bills];
+                                                                newBills[index].amount = formatRupiah(e.target.value);
+                                                                handlePhaseDataChange('bills', newBills);
+                                                            }}
+                                                        />
+                                                    </div>
+                                                    <div className="md:col-span-3">
+                                                        <label className="block text-xs text-slate-500 mb-1">Jatuh Tempo</label>
+                                                        <input
+                                                            type="date"
+                                                            className={inputClass}
+                                                            value={bill.due}
+                                                            onChange={(e) => {
+                                                                const newBills = [...phaseData.bills];
+                                                                newBills[index].due = e.target.value;
+                                                                handlePhaseDataChange('bills', newBills);
+                                                            }}
+                                                        />
+                                                    </div>
+                                                    <div className="md:col-span-2">
+                                                        <label className="block text-xs text-slate-500 mb-1">Status</label>
+                                                        <select
+                                                            className={inputClass}
+                                                            value={bill.status || 'Unpaid'}
+                                                            onChange={(e) => {
+                                                                const newBills = [...phaseData.bills];
+                                                                newBills[index].status = e.target.value;
+                                                                handlePhaseDataChange('bills', newBills);
+                                                            }}
+                                                        >
+                                                            <option value="Unpaid">Unpaid</option>
+                                                            <option value="Dibayar Sebagian">Dibayar Sebagian</option>
+                                                            <option value="Lunas">Lunas</option>
+                                                        </select>
+                                                    </div>
+                                                    <div className="md:col-span-1 flex justify-end mt-6">
+                                                        {phaseData.bills.length > 1 && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    const newBills = phaseData.bills.filter((_, i) => i !== index);
+                                                                    // Re-label
+                                                                    newBills.forEach((b, i) => b.label = `Tagihan ${i + 1}`);
+                                                                    handlePhaseDataChange('bills', newBills);
+                                                                }}
+                                                                className="w-10 h-10 flex items-center justify-center rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+                                                                title="Hapus Tagihan"
+                                                            >
+                                                                <span className="material-icons-round text-[20px]">delete</span>
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ))}
+
+                                            <div className="flex justify-between items-center mt-4">
+                                                <button
+                                                    type="button"
+                                                    className="text-sm font-medium text-primary hover:text-primary-hover flex items-center gap-1 bg-primary/5 hover:bg-primary/10 px-3 py-1.5 rounded-lg transition-colors"
+                                                    onClick={() => {
+                                                        const newBills = [...(phaseData.bills || [])];
+                                                        newBills.push({
+                                                            id: Date.now(),
+                                                            label: `Tagihan ${newBills.length + 1}`,
+                                                            amount: 'Rp 0',
+                                                            due: '',
+                                                            status: 'Unpaid'
+                                                        });
+                                                        handlePhaseDataChange('bills', newBills);
+                                                    }}
+                                                >
+                                                    <span className="material-icons text-[18px]">add_circle</span>
+                                                    Tambah Tagihan
+                                                </button>
+
+                                                <div className="text-sm">
+                                                    <span className="text-slate-500">Total Tagihan: </span>
+                                                    <span className="font-bold text-slate-900 dark:text-white">
+                                                        Rp {(phaseData.bills || []).reduce((sum, b) => sum + parseRupiah(b.amount), 0).toLocaleString('id-ID')}
+                                                    </span>
+                                                </div>
+                                            </div>
                                         </div>
                                     )}
                                 </div>
