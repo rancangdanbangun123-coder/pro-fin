@@ -617,7 +617,7 @@ export default function Subkontraktor() {
                                     <div className="bg-slate-50/50 dark:bg-slate-800/30 border-b border-slate-200 dark:border-slate-800 p-4">
                                         <h4 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-3 flex items-center gap-2">
                                             <span className="material-icons text-sm">pie_chart</span>
-                                            Ringkasan Transaksi per Project Manager
+                                            Ringkasan Transaksi per User
                                         </h4>
                                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                             {(() => {
@@ -628,7 +628,7 @@ export default function Subkontraktor() {
                                                 if (subconTrxs.length === 0) {
                                                     return (
                                                         <div className="col-span-3 text-center py-4 text-slate-500 dark:text-slate-400 text-sm italic">
-                                                            Belum ada transaksi dengan Project Manager manapun.
+                                                            Belum ada transaksi dengan User manapun.
                                                         </div>
                                                     );
                                                 }
@@ -805,30 +805,44 @@ export default function Subkontraktor() {
                                                 <div>
                                                     <h4 className="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3 uppercase tracking-wide text-xs">Riwayat Proyek & Pembayaran</h4>
                                                     <div className="relative pl-4 border-l border-slate-300 dark:border-slate-700 space-y-6">
-                                                        {(selectedSubcon.history || []).map((item, index) => (
-                                                            <div key={index} className="relative">
-                                                                <div className={`absolute -left-[21px] top-1 h-3 w-3 rounded-full border-2 ${index === 0 ? 'border-primary' : 'border-slate-400 dark:border-slate-600'} bg-white dark:bg-background-dark`}></div>
-                                                                <div className={`bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-800 rounded-lg p-3 hover:border-slate-300 dark:hover:border-slate-700 transition-colors shadow-sm ${index > 0 ? 'opacity-80' : ''}`}>
-                                                                    <div className="flex justify-between items-start mb-2">
-                                                                        <div>
-                                                                            <div className="font-medium text-slate-900 dark:text-white text-sm">{item.name}</div>
-                                                                            <div className="text-xs text-slate-500">{item.po} • {item.date}</div>
+                                                        {(() => {
+                                                            const historyTrxs = transactions.filter(t => t.payee?.toLowerCase() === selectedSubcon.name.toLowerCase());
+
+                                                            if (historyTrxs.length === 0) {
+                                                                return (
+                                                                    <div className="text-center py-6 border border-dashed border-slate-300 dark:border-slate-700 rounded-lg text-slate-500 dark:text-slate-400 text-sm mt-4">
+                                                                        Belum ada riwayat transaksi.
+                                                                    </div>
+                                                                );
+                                                            }
+
+                                                            return historyTrxs.slice().reverse().map((t, index) => {
+                                                                const projectName = t.projectId && t.projectId !== 'all' ? (PROJECT_DATA.find(p => p.id === t.projectId)?.name || t.projectId) : 'Sistem / Multi Proyek';
+
+                                                                return (
+                                                                    <div key={t.id || index} className="relative">
+                                                                        <div className={`absolute -left-[21px] top-1 h-3 w-3 rounded-full border-2 ${index === 0 ? 'border-primary' : 'border-slate-400 dark:border-slate-600'} bg-white dark:bg-background-dark`}></div>
+                                                                        <div className={`bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-800 rounded-lg p-3 hover:border-slate-300 dark:hover:border-slate-700 transition-colors shadow-sm ${index > 0 ? 'opacity-80' : ''}`}>
+                                                                            <div className="flex justify-between items-start mb-2">
+                                                                                <div>
+                                                                                    <div className="font-medium text-slate-900 dark:text-white text-sm">{projectName}</div>
+                                                                                    <div className="text-xs text-slate-500 mt-0.5">{t.title} • {t.date}</div>
+                                                                                </div>
+                                                                                <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium ${t.type === 'in' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-900/50' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'}`}>
+                                                                                    {t.type === 'in' ? 'Masuk' : 'Keluar'}
+                                                                                </span>
+                                                                            </div>
+                                                                            <div className="flex justify-between items-end border-t border-slate-100 dark:border-slate-800/50 pt-2 mt-2">
+                                                                                <div className="text-xs text-slate-500 dark:text-slate-400 w-2/3 truncate">User: {t.createdBy || 'Sistem'} | Kas: {t.account}</div>
+                                                                                <div className={`font-mono text-sm font-semibold ${t.type === 'in' ? 'text-green-600 dark:text-green-400' : 'text-slate-700 dark:text-slate-200'}`}>
+                                                                                    {t.type === 'in' ? '+' : '-'}{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(t.amount)}
+                                                                                </div>
+                                                                            </div>
                                                                         </div>
-                                                                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium ${item.statusColor === 'green' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-900/50' :
-                                                                            item.statusColor === 'red' ? 'bg-red-50 dark:bg-red-400/10 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-400/20' :
-                                                                                item.statusColor === 'amber' ? 'bg-amber-100 dark:bg-amber-400/10 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-400/20' :
-                                                                                    'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
-                                                                            }`}>
-                                                                            {item.status}
-                                                                        </span>
                                                                     </div>
-                                                                    <div className="flex justify-between items-end border-t border-slate-100 dark:border-slate-800/50 pt-2 mt-2">
-                                                                        <div className="text-xs text-slate-500 dark:text-slate-400 w-2/3 truncate">{item.desc}</div>
-                                                                        <div className="font-mono text-sm font-semibold text-slate-700 dark:text-slate-200">{item.amount}</div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        ))}
+                                                                );
+                                                            });
+                                                        })()}
                                                     </div>
                                                 </div>
                                             )}
