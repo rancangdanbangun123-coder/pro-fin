@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 
 import { SUBCON_DATABASE } from '../data/subcontractorData';
 import { MATERIAL_DATABASE } from '../data/materialData';
+import { projects as PROJECT_DATA } from '../data/projectData';
 
 
 
@@ -288,7 +289,7 @@ export default function Subkontraktor() {
                         <div className="flex items-center justify-between">
                             <h2 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                                 <span className="material-icons text-primary text-sm">analytics</span>
-                                Ringkasan Biaya 2026
+                                Ringkasan Biaya
                             </h2>
                             <div className="flex items-center gap-2">
                                 <select className="bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700 text-sm rounded-lg px-3 py-1.5 text-slate-700 dark:text-slate-300 focus:border-primary focus:ring-1 focus:ring-primary outline-none shadow-sm">
@@ -305,7 +306,7 @@ export default function Subkontraktor() {
                                 <table className="w-full text-sm text-left">
                                     <thead className="text-xs text-slate-500 dark:text-slate-400 uppercase bg-slate-50 dark:bg-slate-800 sticky top-0 z-10 border-b border-slate-200 dark:border-slate-700">
                                         <tr>
-                                            <th className="px-4 py-3 font-medium">Project Manager / Subcon</th>
+                                            <th className="px-4 py-3 font-medium">Nama User</th>
                                             <th className="px-4 py-3 font-medium text-right">Total Kontrak</th>
                                             <th className="px-4 py-3 font-medium text-right">Terbayar (YTD)</th>
                                             <th className="px-4 py-3 font-medium text-right">Sisa Tagihan</th>
@@ -342,10 +343,14 @@ export default function Subkontraktor() {
                                                         subcon: matchedSubcon,
                                                         subconName: matchedSubcon ? matchedSubcon.name : subconName,
                                                         terbayar: 0,
-                                                        totalKontrak: totalKontrakMock
+                                                        totalKontrak: totalKontrakMock,
+                                                        projectIds: new Set()
                                                     };
                                                 }
                                                 pmGroups[pm][subconName].terbayar += t.amount;
+                                                if (t.projectId && t.projectId !== 'all') {
+                                                    pmGroups[pm][subconName].projectIds.add(t.projectId);
+                                                }
                                             });
 
                                             if (Object.keys(pmGroups).length === 0) {
@@ -362,7 +367,7 @@ export default function Subkontraktor() {
                                                 <React.Fragment key={pm}>
                                                     <tr className="bg-slate-50/50 dark:bg-slate-800/30">
                                                         <td className="px-4 py-2 font-semibold text-primary text-xs tracking-wide" colSpan="5">
-                                                            <span className="material-icons text-xs align-middle mr-1">person</span> PM: {pm}
+                                                            <span className="material-icons text-xs align-middle mr-1">person</span> {pm}
                                                         </td>
                                                     </tr>
                                                     {Object.values(subconsMap).map(data => {
@@ -378,7 +383,16 @@ export default function Subkontraktor() {
                                                                 onClick={() => data.subcon && setSelectedSubcon(data.subcon)}
                                                                 className={`cursor-pointer transition-colors ${isSelected ? 'bg-primary/5 border-l-2 border-primary' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50 border-l-2 border-transparent'}`}
                                                             >
-                                                                <td className="px-4 py-2 pl-8 font-medium truncate max-w-[200px]" title={data.subconName}>{data.subconName}</td>
+                                                                <td className="px-4 py-2 pl-8">
+                                                                    <div className="font-medium truncate max-w-[200px] text-slate-900 dark:text-white" title={data.subconName}>
+                                                                        {data.subconName}
+                                                                    </div>
+                                                                    {data.projectIds.size > 0 && (
+                                                                        <div className="text-[10px] text-slate-500 truncate max-w-[200px]" title={Array.from(data.projectIds).map(id => PROJECT_DATA.find(p => p.id === id)?.name || id).join(', ')}>
+                                                                            Proyek: {Array.from(data.projectIds).map(id => PROJECT_DATA.find(p => p.id === id)?.name || id).join(', ')}
+                                                                        </div>
+                                                                    )}
+                                                                </td>
                                                                 <td className="px-4 py-2 text-right font-medium text-xs text-slate-900 dark:text-slate-200">
                                                                     Rp {totalKontrak.toLocaleString('id-ID')}
                                                                 </td>
