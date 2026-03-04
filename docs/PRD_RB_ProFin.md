@@ -5,7 +5,6 @@
 |--------------------|-----------------------------------------------------|
 | **Nama Produk**    | RB Pro-Fin                                          |
 | **Versi**          | 1.0 (MVP)                                           |
-| **Penulis**        | Tim Produk RB Pro-Fin                                |
 | **Tanggal**        | 4 Maret 2026                                         |
 | **Status**         | Draf — Menunggu Tinjauan Pemangku Kepentingan        |
 
@@ -455,7 +454,6 @@ graph LR
         N["Notion API"]
         GS["Google Sheets API"]
         WA["WhatsApp Business API"]
-        JR["Jurnal.id API"]
         CU["Custom Webhook"]
     end
 
