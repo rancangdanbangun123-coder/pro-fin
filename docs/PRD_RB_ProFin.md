@@ -78,7 +78,7 @@ graph TB
     D --> G
 ```
 
-> MVP saat ini berjalan sepenuhnya di frontend menggunakan **localStorage** untuk penyimpanan data. Migrasi backend (Hono.js + PostgreSQL) sedang direncanakan dan aktif dikembangkan.
+> MVP saat ini berjalan sepenuhnya di frontend menggunakan **localStorage** untuk penyimpanan data.
 
 ---
 
