@@ -78,9 +78,7 @@ graph TB
     D --> G
 ```
 
-> [!IMPORTANT]
-> MVP saat ini berjalan sepenuhnya di frontend menggunakan **localStorage** untuk penyimpanan data. Migrasi backend (Hono.js + PostgreSQL) sedang direncanakan dan aktif dikembangkan.
-
+> MVP saat ini berjalan sepenuhnya di frontend menggunakan **localStorage** untuk penyimpanan data.
 ---
 
 ## 5. Fitur Utama & Spesifikasi Modul
@@ -405,7 +403,7 @@ erDiagram
 
 ## 12. Peta Jalan (Roadmap) Bertahap
 
-### Fase 1 — MVP Frontend ✅ (Kondisi Saat Ini)
+### Fase 1 — MVP Frontend
 - [x] Semua 10 modul diimplementasi dengan localStorage
 - [x] Routing berbasis peran dan sistem perizinan
 - [x] Pengadaan berbasis Kanban dengan 6 fase
@@ -531,20 +529,7 @@ graph LR
 
 ---
 
-### 13.5 Jurnal.id (Akuntansi Eksternal)
-
-**Tujuan:** Sinkronisasi transaksi keuangan ke software akuntansi Jurnal.id untuk pelaporan pajak dan audit.
-
-| Fitur                          | Deskripsi                                                                      |
-|-------------------------------|-------------------------------------------------------------------------------|
-| Push Transaksi                | Kirim data pemasukan/pengeluaran dari modul Akuntansi ke Jurnal.id             |
-| Sinkronisasi Invoice          | Buat invoice di Jurnal.id secara otomatis saat termin diterbitkan di Pro-Fin    |
-| Rekonsiliasi Pembayaran       | Update status pembayaran di Jurnal.id saat pembayaran dicatat di Pro-Fin        |
-| Laporan Pajak                 | Pelaporan PPN/PPh otomatis berdasarkan data transaksi yang tersinkronisasi      |
-
----
-
-### 13.6 Webhook & REST API Umum
+### 13.5 Webhook & REST API Umum
 
 **Tujuan:** Menyediakan API terbuka agar aplikasi pihak ketiga mana pun bisa terhubung ke Pro-Fin.
 
@@ -599,7 +584,7 @@ Authorization: Bearer {API_KEY}
 
 ---
 
-### 13.7 Prioritas Implementasi Integrasi
+### 13.6 Prioritas Implementasi Integrasi
 
 | Prioritas | Integrasi            | Fase  | Alasan                                                        |
 |-----------|---------------------|-------|--------------------------------------------------------------|
@@ -607,8 +592,6 @@ Authorization: Bearer {API_KEY}
 | 🔴 Tinggi | WhatsApp Business   | Fase 3 | Kebutuhan notifikasi mendesak dari tim lapangan               |
 | 🟡 Sedang | Notion API          | Fase 4 | Kolaborasi tim manajemen dan dokumentasi                      |
 | 🟡 Sedang | Google Sheets API   | Fase 4 | Transisi bertahap dari spreadsheet manual                     |
-| 🟢 Rendah | Jurnal.id           | Fase 4 | Bergantung pada volume transaksi dan kebutuhan audit          |
-
 ---
 
 ## 14. Prioritas Pengembangan Fitur
@@ -619,16 +602,16 @@ Urutan pengembangan modul backend berdasarkan **dampak bisnis**, **dependency an
 
 | Urutan | Modul | Skor | Alasan |
 |:---:|---|:---:|---|
-| **1** | 🔐 **User & Category Administration** | ⭐⭐⭐⭐⭐ | Fondasi semua modul lain. Auth harus jalan duluan, role & permission harus ready sebelum modul lain bisa dipakai. Kategori dipakai oleh Material, Aset, dan Pengadaan. |
-| **2** | 📋 **Project Management** | ⭐⭐⭐⭐⭐ | Entitas utama. Hampir semua modul lain bergantung pada `projectId` — pengadaan, invoice, akuntansi, laporan semua terikat ke proyek. |
-| **3** | 🛒 **Procurement Lifecycle** | ⭐⭐⭐⭐⭐ | Aktivitas harian paling intensif. 6 fase Kanban, dipakai PM & Site Manager setiap hari, volume data paling tinggi. |
-| **4** | 🏗️ **Material & Inventory** | ⭐⭐⭐⭐ | Dependency dari Procurement. PR butuh data material (harga, satuan). Material juga dipakai Subkontraktor untuk katalog supply. |
-| **5** | 👷 **Vendor & Subcontractor Management** | ⭐⭐⭐⭐ | Dependency dari Procurement. PO butuh data vendor. Approval flow penting untuk quality control supplier. |
-| **6** | 🧾 **Billing & Termin Management** | ⭐⭐⭐⭐ | Revenue stream. Ini yang menghasilkan uang — invoice ke klien harus akurat dan cepat. |
-| **7** | 💰 **Financial Register** | ⭐⭐⭐ | Pelengkap Billing. Setelah invoice jalan, butuh pencatatan transaksi masuk/keluar per proyek. |
-| **8** | 🔧 **Asset Tracking** | ⭐⭐⭐ | Penting tapi independen. Tidak blocking modul lain. Bisa dikembangkan paralel. |
-| **9** | 📊 **Reporting & Analytics** | ⭐⭐ | Konsumsi data, bukan produksi data. Laporan hanya berguna kalau data dari modul 1–8 sudah lengkap. |
-| **10** | 📈 **Dashboard & Summary Reporting** | ⭐⭐ | Paling akhir. Dashboard hanya agregasi dari semua modul lain — belum ada gunanya kalau data belum lengkap. |
+| **1** | **User & Category Administration** | ⭐⭐⭐⭐⭐ | Fondasi semua modul lain. Auth harus jalan duluan, role & permission harus ready sebelum modul lain bisa dipakai. Kategori dipakai oleh Material, Aset, dan Pengadaan. |
+| **2** | **Project Management** | ⭐⭐⭐⭐⭐ | Entitas utama. Hampir semua modul lain bergantung pada `projectId` — pengadaan, invoice, akuntansi, laporan semua terikat ke proyek. |
+| **3** | **Procurement Lifecycle** | ⭐⭐⭐⭐⭐ | Aktivitas harian paling intensif. 6 fase Kanban, dipakai PM & Site Manager setiap hari, volume data paling tinggi. |
+| **4** | **Material & Inventory** | ⭐⭐⭐⭐ | Dependency dari Procurement. PR butuh data material (harga, satuan). Material juga dipakai Subkontraktor untuk katalog supply. |
+| **5** | **Vendor & Subcontractor Management** | ⭐⭐⭐⭐ | Dependency dari Procurement. PO butuh data vendor. Approval flow penting untuk quality control supplier. |
+| **6** | **Billing & Termin Management** | ⭐⭐⭐⭐ | Revenue stream. Ini yang menghasilkan uang — invoice ke klien harus akurat dan cepat. |
+| **7** | **Financial Register** | ⭐⭐⭐ | Pelengkap Billing. Setelah invoice jalan, butuh pencatatan transaksi masuk/keluar per proyek. |
+| **8** | **Asset Tracking** | ⭐⭐⭐ | Penting tapi independen. Tidak blocking modul lain. Bisa dikembangkan paralel. |
+| **9** | **Reporting & Analytics** | ⭐⭐ | Konsumsi data, bukan produksi data. Laporan hanya berguna kalau data dari modul 1–8 sudah lengkap. |
+| **10** | **Dashboard & Summary Reporting** | ⭐⭐ | Paling akhir. Dashboard hanya agregasi dari semua modul lain — belum ada gunanya kalau data belum lengkap. |
 
 ### 14.2 Diagram Dependency Antar Modul
 
@@ -670,5 +653,3 @@ graph TD
 6. **Laporan & Dashboard terakhir** — karena hanya *membaca* data, bukan *memproduksi* data
 
 ---
-
-*Dokumen ini adalah artefak hidup dan harus diperbarui seiring perkembangan produk. Semua pemangku kepentingan dianjurkan untuk memberikan masukan sebelum pengembangan berlanjut ke Fase 2.*
