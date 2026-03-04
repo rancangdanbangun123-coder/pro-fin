@@ -466,7 +466,6 @@ graph LR
     Q --> CU
 ```
 
-> [!IMPORTANT]
 > Seluruh integrasi pihak ketiga memerlukan **Backend API (Fase 2)** yang sudah aktif. Integrasi ini direncanakan untuk **Fase 4** dalam roadmap.
 
 ---
@@ -640,14 +639,5 @@ graph TD
 ```
 
 **Legenda:** 🔴 Kritis → 🟠 Penting → 🟡 Sedang → 🟢 Nice-to-Have
-
-### 14.3 Logika Pengurutan
-
-1. **Auth & master data dulu** (User, Kategori) — tanpa ini tidak bisa login
-2. **Proyek** — semua modul lain terikat ke proyek sebagai entitas utama
-3. **Pengadaan + Material + Vendor** — ini *core business* operasional harian
-4. **Keuangan** (Billing → Akuntansi) — butuh data dari pengadaan yang sudah jalan
-5. **Aset** — penting tapi independen, bisa dikerjakan paralel dengan keuangan
-6. **Laporan & Dashboard terakhir** — karena hanya *membaca* data, bukan *memproduksi* data
 
 ---
