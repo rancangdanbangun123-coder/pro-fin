@@ -393,7 +393,7 @@ erDiagram
 
 | Dependensi                      | Tipe       | Status          | Dampak Jika Tertunda                              |
 |--------------------------------|------------|-----------------|--------------------------------------------------|
-| Backend API (Hono.js)          | Internal   | Dalam Pengembangan | Tetap menggunakan localStorage (tanpa multi-user) |
+| Backend API (Hono.js)          | Internal   | Direncanakan    | Tetap menggunakan localStorage (tanpa multi-user) |
 | Setup Database PostgreSQL      | Internal   | Direncanakan     | Tidak ada data persistent sisi server             |
 | Infrastruktur Docker           | Internal   | Direncanakan     | Deployment manual ke server sebagai fallback      |
 | Autentikasi (Better Auth)      | Internal   | Direncanakan     | Autentikasi plaintext saat ini tetap berlaku      |
@@ -413,7 +413,7 @@ erDiagram
 - [x] Pembuatan invoice dengan tagihan termin
 - [x] Kategori dengan sub-kategori berjenjang
 
-### Fase 2 — Migrasi Backend (Sedang Berlangsung)
+### Fase 2 — Migrasi Backend
 - [ ] Server API Hono.js dengan DrizzleORM
 - [ ] Database PostgreSQL dengan migrasi
 - [ ] Integrasi Better Auth (login, signup, sesi)
@@ -437,5 +437,3 @@ erDiagram
 - [ ] Aplikasi mobile untuk pekerja lapangan (React Native / Flutter)
 
 ---
-
-*Dokumen ini adalah artefak hidup dan harus diperbarui seiring perkembangan produk. Semua pemangku kepentingan dianjurkan untuk memberikan masukan sebelum pengembangan berlanjut ke Fase 2.*
