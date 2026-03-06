@@ -5,6 +5,7 @@
     "apps/*"
   ],
   "scripts": {
+    "postinstall": "chmod -R +x node_modules/.bin/ 2>/dev/null || true",
     "dev:portal": "npm run dev --workspace=apps/portal",
     "build": "npm run build --workspace=apps/portal",
     "build:portal": "npm run build --workspace=apps/portal"
