@@ -5,6 +5,8 @@
     "apps/*"
   ],
   "scripts": {
-    "dev:portal": "npm run dev --workspace=apps/portal"
+    "dev:portal": "npm run dev --workspace=apps/portal",
+    "build": "npm run build --workspace=apps/portal",
+    "build:portal": "npm run build --workspace=apps/portal"
   }
 }
