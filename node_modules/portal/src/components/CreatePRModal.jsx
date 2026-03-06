@@ -12,7 +12,7 @@ export default function CreatePRModal({ isOpen, onClose, projects, onSubmit }) {
     // Form State
     const [selectedProject, setSelectedProject] = useState('');
     const [items, setItems] = useState([]);
-    const [combineItems, setCombineItems] = useState(true);
+    const [combineItems, setCombineItems] = useState(false);
 
     useEffect(() => {
         if (isOpen) {
@@ -188,7 +188,7 @@ export default function CreatePRModal({ isOpen, onClose, projects, onSubmit }) {
                                     {items.map((item, index) => (
                                         <tr key={item.id} className="group hover:bg-slate-50 dark:hover:bg-white/5 transition-colors relative">
                                             <td className="px-4 py-3 text-center text-slate-400">{index + 1}</td>
-                                            <td className="px-4 py-3 relative z-[60]">
+                                            <td className="px-4 py-3 relative" style={{ zIndex: items.length - index + 10 }}>
                                                 <div className="flex flex-col gap-1">
                                                     <SearchableSelect
                                                         value={item.name}

@@ -46,17 +46,19 @@ function getPhaseFields(stage) {
             ];
         case 'do':
             return [
-                { name: 'receivedBy', label: 'Nama Penerima', type: 'text', required: true, placeholder: 'Nama penerima di lokasi' },
+                { name: 'recv', label: 'Nama Penerima', type: 'text', required: true, placeholder: 'Nama penerima di lokasi' },
                 { name: 'receivedDate', label: 'Waktu Diterima', type: 'datetime', required: true },
                 { name: 'notes', label: 'Catatan', type: 'textarea', required: false, placeholder: 'Catatan penerimaan barang...' },
                 { name: 'materialCondition', label: 'Kondisi Barang Pesanan (Kualitas, Spek, Jumlah)', type: 'material_condition', required: true }
             ];
         case 'evaluation':
             return [
-                { name: 'statusLabel', label: 'Label Rating', type: 'text', required: false, placeholder: 'Cth: Rating: 4 Bintang' }
+                { name: 'statusLabel', label: 'Label Rating (Read-only)', type: 'text', required: false, placeholder: 'Cth: Rating: 4 Bintang', disabled: true }
             ];
         case 'done':
             return [
+                { name: 'rating', label: 'Rating Vendor', type: 'rating', required: true },
+                { name: 'evalNotes', label: 'Catatan Evaluasi / Penutup', type: 'textarea', required: false, placeholder: 'Ketepatan waktu, kualitas barang, dll.' },
                 { name: 'total', label: 'Total Nilai Akhir', type: 'currency', required: true }
             ];
         default:

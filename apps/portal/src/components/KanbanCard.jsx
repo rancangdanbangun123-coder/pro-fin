@@ -161,38 +161,46 @@ export default function KanbanCard({ item, index, onClick, onDelete, onViewHisto
                 })()}
 
                 {/* DO Phase */}
-                {item.stage === 'do' && (
-                    <div className="bg-teal-50 dark:bg-teal-900/10 p-2 rounded border border-teal-100 dark:border-teal-800/30">
-                        {item.checklist ? (
-                            <div className="flex flex-col gap-1.5">
-                                <div className="flex items-center justify-between text-[11px]">
-                                    <span className="text-slate-600 dark:text-slate-300 flex items-center gap-1">
-                                        <span className={`material-icons-round text-[14px] ${item.checklist.physical ? 'text-teal-500' : 'text-slate-400'}`}>
-                                            {item.checklist.physical ? 'check_box' : 'check_box_outline_blank'}
+                {item.stage === 'do' && (() => {
+                    const conditions = item.materialCondition || {};
+                    const conditionValues = Object.values(conditions);
+                    const hasData = conditionValues.length > 0;
+                    const isAllSesuai = hasData && conditionValues.every(v => v === 'sesuai');
+                    const isAnyTidakSesuai = hasData && conditionValues.some(v => v === 'tidak_sesuai');
+
+                    return (
+                        <div className="bg-teal-50 dark:bg-teal-900/10 p-2 rounded border border-teal-100 dark:border-teal-800/30 flex flex-col gap-1.5">
+                            {item.receivedDate ? (
+                                <>
+                                    <div className="flex items-center justify-between text-[11px]">
+                                        <span className="text-slate-600 dark:text-slate-300 flex items-center gap-1">
+                                            <span className="material-icons-round text-[14px] text-teal-500">
+                                                event_available
+                                            </span>
+                                            Waktu Diterima
                                         </span>
-                                        Cek Fisik
-                                    </span>
-                                    <span className={item.checklist.physical ? 'text-teal-600 font-medium' : 'text-slate-500'}>
-                                        {item.checklist.physical ? 'Diterima' : 'Pending'}
-                                    </span>
-                                </div>
-                                <div className="flex items-center justify-between text-[11px] pt-1.5 border-t border-teal-100 dark:border-teal-800/30">
-                                    <span className="text-slate-600 dark:text-slate-300 flex items-center gap-1">
-                                        <span className={`material-icons-round text-[14px] ${item.checklist.doc ? 'text-teal-500' : 'text-slate-400'}`}>
-                                            {item.checklist.doc ? 'check_box' : 'check_box_outline_blank'}
+                                        <span className="text-teal-600 font-medium">
+                                            {new Date(item.receivedDate).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' })}
                                         </span>
-                                        Surat Jalan
-                                    </span>
-                                    <span className={item.checklist.doc ? 'text-teal-600 font-medium' : 'text-slate-500'}>
-                                        {item.checklist.doc ? 'Valid' : 'Pending'}
-                                    </span>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="text-xs text-slate-500 italic text-center py-2">Menunggu kedatangan di site...</div>
-                        )}
-                    </div>
-                )}
+                                    </div>
+                                    <div className="flex items-center justify-between text-[11px] pt-1.5 border-t border-teal-100 dark:border-teal-800/30">
+                                        <span className="text-slate-600 dark:text-slate-300 flex items-center gap-1">
+                                            <span className={`material-icons-round text-[14px] ${isAllSesuai ? 'text-green-500' : isAnyTidakSesuai ? 'text-red-500' : 'text-teal-500'}`}>
+                                                {isAllSesuai ? 'check_circle' : isAnyTidakSesuai ? 'error' : 'inventory_2'}
+                                            </span>
+                                            Kondisi Fisik
+                                        </span>
+                                        <span className={`font-medium ${isAllSesuai ? 'text-green-600' : isAnyTidakSesuai ? 'text-red-600' : 'text-teal-600'}`}>
+                                            {isAllSesuai ? 'Semua Sesuai' : isAnyTidakSesuai ? 'Ada Masalah' : 'Dicek'}
+                                        </span>
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="text-xs text-slate-500 italic text-center py-2">Menunggu kedatangan di site...</div>
+                            )}
+                        </div>
+                    );
+                })()}
 
                 {/* Evaluation Phase */}
                 {item.stage === 'evaluation' && (
@@ -256,11 +264,18 @@ export default function KanbanCard({ item, index, onClick, onDelete, onViewHisto
                 </div>
             </div>
 
-            {/* Done Badge */}
             {item.done && (
-                <div className="flex items-center gap-1 text-[10px] text-green-600 dark:text-green-500 bg-green-500/10 px-2 py-1 rounded w-full justify-center mt-3">
-                    <span className="material-icons-round text-[12px]">done_all</span>
-                    Selesai & Lunas
+                <div className="flex flex-col gap-1 w-full mt-3">
+                    <div className="flex items-center gap-1 text-[10px] text-green-600 dark:text-green-500 bg-green-500/10 px-2 py-1 rounded justify-center">
+                        <span className="material-icons-round text-[12px]">done_all</span>
+                        Selesai & Lunas
+                    </div>
+                    {item.rating > 0 && (
+                        <div className="flex items-center justify-center gap-1 text-[10px] text-yellow-600 dark:text-yellow-500 bg-yellow-500/10 px-2 py-1 rounded">
+                            <span className="material-icons-round text-[12px]">star</span>
+                            Rating: {item.rating}/5
+                        </div>
+                    )}
                 </div>
             )}
         </div>

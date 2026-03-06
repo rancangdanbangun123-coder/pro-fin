@@ -230,8 +230,8 @@ export default function ProcurementDetailModal({ isOpen, onClose, item, onUpdate
                                         <div className="flex items-center justify-between mb-3">
                                             <p className="text-xs text-slate-500 uppercase tracking-wider">Total Tagihan</p>
                                             <span className={`px-2 py-0.5 rounded text-xs font-bold border ${paidCount === bills.length && hasBills ? 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800' :
-                                                    paidCount > 0 ? 'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800' :
-                                                        'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800'
+                                                paidCount > 0 ? 'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800' :
+                                                    'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800'
                                                 }`}>
                                                 {paidCount === bills.length && hasBills ? 'Lunas' : paidCount > 0 ? 'Sebagian' : 'Unpaid'}
                                             </span>
@@ -277,8 +277,8 @@ export default function ProcurementDetailModal({ isOpen, onClose, item, onUpdate
                                                             <td className="px-3 py-2.5 whitespace-nowrap text-slate-600 dark:text-slate-400">{bill.due || '-'}</td>
                                                             <td className="px-3 py-2.5 whitespace-nowrap text-center">
                                                                 <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${bill.status === 'Lunas' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
-                                                                        bill.status === 'Dibayar Sebagian' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
-                                                                            'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
+                                                                    bill.status === 'Dibayar Sebagian' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                                                                        'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
                                                                     }`}>
                                                                     {bill.status}
                                                                 </span>
@@ -308,39 +308,98 @@ export default function ProcurementDetailModal({ isOpen, onClose, item, onUpdate
                         );
                     })()}
 
-                    {item.stage === 'do' && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                            <div className="space-y-4">
-                                <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider border-b border-slate-200 dark:border-border-dark pb-2">Penerimaan Lapangan</h3>
-                                <div className="bg-slate-50 dark:bg-surface-dark-lighter p-4 rounded-xl border border-slate-200 dark:border-border-dark">
-                                    <p className="text-xs text-slate-500 mb-1">Diterima Oleh (Receiver)</p>
-                                    <p className="text-base font-bold text-slate-900 dark:text-white mb-4">{item.recv || 'Menunggu Kedatangan'}</p>
+                    {item.stage === 'do' && (() => {
+                        // Extract material data needed for rendering
+                        // In case it's a combined PR, rawItems exist. Otherwise, use title/vol.
+                        const materialRows = item.rawItems ? [...item.rawItems] : [{ name: item.title, qty: item.qty || item.vol, unit: '' }];
 
-                                    {item.checklist && (
-                                        <div className="space-y-3 pt-4 border-t border-slate-200 dark:border-slate-700">
-                                            <div className="flex items-center gap-3">
-                                                <span className={`material-icons-round ${item.checklist.physical ? 'text-teal-500' : 'text-slate-300 dark:text-slate-600'}`}>{item.checklist.physical ? 'check_circle' : 'radio_button_unchecked'}</span>
-                                                <span className={`text-sm ${item.checklist.physical ? 'text-teal-700 dark:text-teal-400 font-medium' : 'text-slate-500'}`}>Cek Kualitas & Kuantitas Fisik</span>
+                        // Parse condition data from the item
+                        const conditions = item.materialCondition || {};
+                        const hasAnyPhotos = materialRows.some((_, i) => item[`materialCondition_photoData_item-${i}`]);
+
+                        return (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                                <div className="space-y-4">
+                                    <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider border-b border-slate-200 dark:border-border-dark pb-2">Penerimaan Lapangan</h3>
+                                    <div className="bg-slate-50 dark:bg-surface-dark-lighter p-4 rounded-xl border border-slate-200 dark:border-border-dark space-y-4">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <p className="text-xs text-slate-500 mb-1">Diterima Oleh</p>
+                                                <p className="text-sm font-bold text-slate-900 dark:text-white">{item.recv || item.receivedBy || 'Menunggu Kedatangan'}</p>
                                             </div>
-                                            <div className="flex items-center gap-3">
-                                                <span className={`material-icons-round ${item.checklist.doc ? 'text-teal-500' : 'text-slate-300 dark:text-slate-600'}`}>{item.checklist.doc ? 'check_circle' : 'radio_button_unchecked'}</span>
-                                                <span className={`text-sm ${item.checklist.doc ? 'text-teal-700 dark:text-teal-400 font-medium' : 'text-slate-500'}`}>Validasi Surat Jalan DO</span>
+                                            <div>
+                                                <p className="text-xs text-slate-500 mb-1">Waktu Diterima</p>
+                                                <p className="text-sm font-bold text-slate-900 dark:text-white">
+                                                    {item.receivedDate ? new Date(item.receivedDate).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }) : '-'}
+                                                </p>
                                             </div>
+                                        </div>
+                                    </div>
+                                    {item.notes && (
+                                        <div className="bg-slate-50 dark:bg-surface-dark-lighter p-4 rounded-xl border border-slate-200 dark:border-border-dark">
+                                            <p className="text-xs text-slate-500 mb-1">Catatan Penerimaan</p>
+                                            <p className="text-sm text-slate-700 dark:text-slate-300 bg-white dark:bg-card-dark p-3 rounded-lg border border-slate-200 dark:border-border-dark shadow-sm">
+                                                {item.notes}
+                                            </p>
                                         </div>
                                     )}
                                 </div>
-                            </div>
-                            <div className="space-y-4">
-                                <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider border-b border-slate-200 dark:border-border-dark pb-2">Informasi Barang</h3>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <p className="text-xs text-slate-500 mb-1">Jumlah Datang</p>
-                                        <p className="text-sm font-medium text-slate-900 dark:text-white">{item.qty || item.vol || '-'}</p>
+                                <div className="space-y-4">
+                                    <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider border-b border-slate-200 dark:border-border-dark pb-2">Kondisi Barang Pesanan</h3>
+                                    <div className="space-y-3">
+                                        {materialRows.map((row, idx) => {
+                                            const rowKey = `item-${idx}`;
+                                            const conditionStatus = conditions[rowKey]; // 'sesuai' or 'tidak_sesuai'
+                                            const photoData = item[`materialCondition_photoData_${rowKey}`];
+
+                                            return (
+                                                <div key={rowKey} className={`flex gap-3 p-3 rounded-lg border transition-colors ${conditionStatus === 'sesuai' ? 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800' :
+                                                    conditionStatus === 'tidak_sesuai' ? 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800' :
+                                                        'bg-white dark:bg-card-dark border-slate-200 dark:border-slate-700'
+                                                    }`}>
+
+                                                    {/* Photo Thumbnail */}
+                                                    {hasAnyPhotos && (
+                                                        <div className="shrink-0 w-16 h-16 rounded overflow-hidden bg-slate-100 dark:bg-slate-800 flex items-center justify-center border border-slate-200 dark:border-slate-700">
+                                                            {photoData ? (
+                                                                photoData.startsWith('data:video') ? (
+                                                                    <video src={photoData} className="w-full h-full object-cover" />
+                                                                ) : (
+                                                                    <img src={photoData} alt="Bukti kondisi material" className="w-full h-full object-cover" />
+                                                                )
+                                                            ) : (
+                                                                <span className="material-icons-round text-slate-300 dark:text-slate-600 text-[20px]">image_not_supported</span>
+                                                            )}
+                                                        </div>
+                                                    )}
+
+                                                    {/* Details */}
+                                                    <div className="flex-1 min-w-0 flex flex-col justify-center">
+                                                        <div className="text-sm font-medium text-slate-900 dark:text-white truncate">{row.name}</div>
+                                                        <div className="text-xs text-slate-500 mb-1.5">{row.qty} {row.unit}</div>
+
+                                                        {conditionStatus ? (
+                                                            <div>
+                                                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${conditionStatus === 'sesuai'
+                                                                    ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400'
+                                                                    : 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400'
+                                                                    }`}>
+                                                                    <span className="material-icons-round text-[12px]">{conditionStatus === 'sesuai' ? 'check_circle' : 'cancel'}</span>
+                                                                    {conditionStatus === 'sesuai' ? 'Sesuai' : 'Tidak Sesuai'}
+                                                                </span>
+                                                            </div>
+                                                        ) : (
+                                                            <div><span className="text-[10px] text-slate-400 italic">Belum dicek</span></div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    )}
+                        );
+                    })()}
 
                     {item.stage === 'evaluation' && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">

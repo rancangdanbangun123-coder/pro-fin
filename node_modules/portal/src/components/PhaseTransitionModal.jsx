@@ -80,22 +80,20 @@ function getFields(from, to, isEdit = false) {
             ];
         case 'do':
             return [
-                { name: 'receivedBy', label: 'Nama Penerima', type: 'text', required: true, placeholder: 'Nama penerima di lokasi' },
+                { name: 'recv', label: 'Nama Penerima', type: 'text', required: true, placeholder: 'Nama penerima di lokasi' },
                 { name: 'receivedDate', label: 'Waktu Diterima', type: 'datetime', required: true },
                 { name: 'notes', label: 'Catatan', type: 'textarea', required: false, placeholder: 'Catatan penerimaan barang...' },
                 { name: 'materialCondition', label: 'Kondisi Barang Pesanan (Kualitas, Spek, Jumlah)', type: 'material_condition', required: true }
             ];
         case 'evaluation':
             return [
-                {
-                    name: 'rating', label: 'Rating Supplier', type: 'rating', required: true,
-                },
-                { name: 'evalNotes', label: 'Catatan Evaluasi', type: 'textarea', required: false, placeholder: 'Ketepatan waktu, kualitas barang, dll.' },
+                { name: 'statusLabel', label: 'Label Rating (Read-only)', type: 'text', required: false, placeholder: 'Cth: Rating: 4 Bintang', disabled: true }
             ];
         case 'done':
             return [
+                { name: 'rating', label: 'Rating Vendor', type: 'rating', required: true },
+                { name: 'evalNotes', label: 'Catatan Evaluasi / Penutup', type: 'textarea', required: false, placeholder: 'Ketepatan waktu, kualitas barang, dll.' },
                 { name: 'confirmComplete', label: 'Saya konfirmasi bahwa item ini telah selesai diproses', type: 'checkbox', required: true },
-                { name: 'closingNotes', label: 'Catatan Penutup (Opsional)', type: 'textarea', required: false, placeholder: 'Ringkasan final, arsip referensi...' },
             ];
         default:
             return [

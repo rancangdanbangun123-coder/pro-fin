@@ -103,8 +103,10 @@ const applyPhaseStandard = (item, destPhase, formValues, isForward, isEdit = fal
         }
         case 'do':
             phaseProps = {
-                recv: getVal('receivedBy') || 'Menunggu',
-                checklist: { physical: isForward, doc: isForward } // Reset checklist if moving backward
+                recv: getVal('recv') || getVal('receivedBy') || 'Menunggu',
+                receivedDate: getVal('receivedDate') || null,
+                notes: getVal('notes') || '',
+                materialCondition: getVal('materialCondition') || {}
             };
             break;
         case 'evaluation':
