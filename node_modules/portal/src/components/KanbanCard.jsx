@@ -68,9 +68,17 @@ export default function KanbanCard({ item, index, onClick, onDelete, onViewHisto
 
             {/* Type & Project */}
             <div className="mb-2 flex items-center justify-between gap-2">
-                <span className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-sm border shrink-0 ${getBadgeStyle(item.type)}`}>
-                    {item.type}
-                </span>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-sm border shrink-0 ${getBadgeStyle(item.type)}`}>
+                        {item.type}
+                    </span>
+                    {item.procurementType === 'minor' && (
+                        <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-sm border text-orange-600 bg-orange-50 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800">Kecil</span>
+                    )}
+                    {item.procurementType === 'asset' && (
+                        <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-sm border text-purple-600 bg-purple-50 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800">Aset</span>
+                    )}
+                </div>
                 {item.project && !item.project.includes('On Site') && !item.project.includes('Finance') && !item.project.includes('Termin') && (
                     <span className="text-[10px] text-slate-500 border border-slate-200 dark:border-border-dark rounded px-1.5 py-0.5 truncate max-w-[120px] font-medium">{item.project}</span>
                 )}
@@ -227,24 +235,23 @@ export default function KanbanCard({ item, index, onClick, onDelete, onViewHisto
 
             {/* Footer */}
             <div className="flex items-center justify-between border-t border-slate-100 dark:border-border-dark/50 pt-2">
-                {/* Left Side: Avatar or Tags */}
+                {/* Left Side: Creator Info */}
                 <div className="flex items-center gap-2">
-                    {item.userAvatar && (
-                        <img alt="Avatar" className="w-6 h-6 rounded-full border border-slate-200 dark:border-slate-600" src={item.userAvatar} />
-                    )}
-                    {item.avatars && (
-                        <div className="flex -space-x-2">
-                            {item.avatars.map((ava, i) => (
-                                <img key={i} alt="Avatar" className="w-6 h-6 rounded-full border border-slate-200 dark:border-slate-600" src={ava} />
-                            ))}
+                    {item.createdBy ? (
+                        <div className="flex items-center gap-1.5">
+                            <div className="w-5 h-5 rounded-full bg-primary/15 text-primary flex items-center justify-center text-[9px] font-bold uppercase shrink-0 border border-primary/20">
+                                {item.createdBy.name?.charAt(0) || '?'}
+                            </div>
+                            <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400 truncate max-w-[90px]">{item.createdBy.name}</span>
                         </div>
-                    )}
+                    ) : item.userAvatar ? (
+                        <img alt="Avatar" className="w-5 h-5 rounded-full border border-slate-200 dark:border-slate-600" src={item.userAvatar} />
+                    ) : null}
 
                     {item.time && !item.done && (
                         <span className="text-[10px] text-slate-400 flex items-center gap-0.5"><span className="material-icons-round text-[10px]">schedule</span>{item.time}</span>
                     )}
 
-                    {/* Minimal status indicators that didn't fit in the stage blocks */}
                     {item.recv && item.stage === 'do' && (
                         <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-surface-dark-lighter px-1.5 py-0.5 rounded truncate max-w-[80px]">Oleh: {item.recv}</span>
                     )}

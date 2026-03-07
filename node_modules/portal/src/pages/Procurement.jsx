@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { PROCUREMENT_TYPES, mapFromBoardColumn, isValidMove } from '../data/procurementFlows';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import KanbanCard from '../components/KanbanCard';
 import ProcurementDetailModal from '../components/ProcurementDetailModal';
@@ -114,6 +116,23 @@ const applyPhaseStandard = (item, destPhase, formValues, isForward, isEdit = fal
                 statusLabel: getVal('rating') ? `Rating: ${getVal('rating')} Bintang` : 'Menunggu Evaluasi'
             };
             break;
+        case 'report':
+            phaseProps = {
+                reportReceipt: getVal('reportReceipt') || '',
+                reportTotal: getVal('reportTotal') || baseItem.total || 'Rp 0',
+                reportNotes: getVal('reportNotes') || '',
+                reportDate: getVal('reportDate') || null,
+            };
+            break;
+        case 'asset_eval':
+            phaseProps = {
+                assetTag: getVal('assetTag') || '',
+                assetCategory: getVal('assetCategory') || '',
+                warranty: getVal('warranty') || '',
+                assetLocation: getVal('assetLocation') || '',
+                statusLabel: getVal('rating') ? `Rating: ${getVal('rating')} Bintang` : 'Menunggu Evaluasi Aset'
+            };
+            break;
         case 'done':
             phaseProps = {
                 done: !!getVal('confirmComplete')
@@ -131,6 +150,8 @@ const applyPhaseStandard = (item, destPhase, formValues, isForward, isEdit = fal
 };
 
 export default function Procurement() {
+    const { currentUser } = useAuth();
+
     const [data, setData] = useState(() => {
         const saved = localStorage.getItem('procurementData');
         return saved ? JSON.parse(saved) : initialData;
@@ -195,8 +216,10 @@ export default function Procurement() {
                 est: `Rp ${totalEst.toLocaleString('id-ID')}`,
                 stage: 'pr',
                 created: new Date().toLocaleDateString('id-ID'),
+                createdBy: currentUser ? { name: currentUser.name, email: currentUser.email, role: currentUser.role } : { name: 'Sistem', role: '-' },
+                procurementType: formData.procurementType || 'major',
                 rawItems: formData.items,
-                fastTrack: true // Unconditional fast track for all PRs
+                fastTrack: true
             };
         } else {
             formData.items.forEach((item, index) => {
@@ -212,7 +235,9 @@ export default function Procurement() {
                     est: `Rp ${(item.price * item.qty).toLocaleString('id-ID')}`,
                     stage: 'pr',
                     created: new Date().toLocaleDateString('id-ID'),
-                    fastTrack: true // Unconditional fast track for all PRs
+                    createdBy: currentUser ? { name: currentUser.name, email: currentUser.email, role: currentUser.role } : { name: 'Sistem', role: '-' },
+                    procurementType: formData.procurementType || 'major',
+                    fastTrack: true
                 };
             });
         }
@@ -290,11 +315,16 @@ export default function Procurement() {
             destId = 'po';
         }
 
+        // Flow-aware: map board column to the item's actual flow phase
+        const draggedItem = data.items[draggableId];
+        const itemProcType = draggedItem?.procurementType || 'major';
+        const actualDest = mapFromBoardColumn(destId, itemProcType);
+
         // Cross-column move — save as pending, show modal
         setPendingTransition({
             draggableId,
             source,
-            destination: { ...destination, droppableId: destId }
+            destination: { ...destination, droppableId: actualDest }
         });
     };
 
@@ -303,11 +333,23 @@ export default function Procurement() {
         if (!pendingTransition) return;
         const { draggableId, source, destination } = pendingTransition;
 
-        const start = data.columns[source.droppableId];
-        const finish = data.columns[destination.droppableId];
+        // The actual phase (may be report, asset_eval, etc.)
+        const dest = destination.droppableId;
+
+        // Map to the board column that actually exists in data.columns
+        const boardColumnMap = { report: 'invoice', asset_eval: 'evaluation' };
+        const sourceBoard = boardColumnMap[source.droppableId] || source.droppableId;
+        const destBoard = boardColumnMap[dest] || dest;
+
+        const start = data.columns[sourceBoard];
+        const finish = data.columns[destBoard];
+
+        if (!start || !finish) {
+            setPendingTransition(null);
+            return;
+        }
 
         const startTaskIds = Array.from(start.itemIds);
-        // Use indexOf to find the real position — source.index is from the filtered list, not the full itemIds array
         const realSourceIndex = startTaskIds.indexOf(draggableId);
         if (realSourceIndex !== -1) {
             startTaskIds.splice(realSourceIndex, 1);
@@ -315,22 +357,18 @@ export default function Procurement() {
         const newStart = { ...start, itemIds: startTaskIds };
 
         const finishTaskIds = Array.from(finish.itemIds);
-        // Append to end of destination — safer than using destination.index from filtered context
         finishTaskIds.push(draggableId);
         const newFinish = { ...finish, itemIds: finishTaskIds };
 
-        // Prepare mapped properties for KanbanCard display based on destination
-        let additionalProps = {};
-        const dest = destination.droppableId;
         const currentItem = data.items[draggableId];
 
-        const COLUMN_ORDER = ['pr', 'rfq', 'selection', 'po', 'invoice', 'do', 'evaluation', 'done'];
-        const isForward = COLUMN_ORDER.indexOf(destination.droppableId) > COLUMN_ORDER.indexOf(source.droppableId);
+        const COLUMN_ORDER = ['pr', 'rfq', 'selection', 'po', 'invoice', 'report', 'do', 'evaluation', 'asset_eval', 'done'];
+        const isForward = COLUMN_ORDER.indexOf(dest) > COLUMN_ORDER.indexOf(source.droppableId);
 
         // Strip old phase UI properties and apply the new phase standard
         const standardizedItem = applyPhaseStandard(currentItem, dest, formValues, isForward);
 
-        // Generate dynamic phase code (e.g., #PR-1024 -> #RFQ-1024)
+        // Generate dynamic phase code
         const currentCode = currentItem.code || '';
         const dashIndex = currentCode.indexOf('-');
         const numericPart = dashIndex !== -1 ? currentCode.substring(dashIndex) : `-${Math.floor(Math.random() * 10000)}`;
@@ -339,6 +377,8 @@ export default function Procurement() {
             invoice: 'INV',
             evaluation: 'EVAL',
             selection: 'SEL',
+            report: 'RPT',
+            asset_eval: 'AST',
         };
         const destPrefix = prefixMap[dest] || dest.toUpperCase();
         const newCode = `#${destPrefix}${numericPart}`;
@@ -349,17 +389,82 @@ export default function Procurement() {
             stage: dest,
             code: newCode,
             ...formValues,
-            // Attach transition metadata (visible on detail modal)
             transitions: [
                 ...(standardizedItem.transitions || []),
                 {
                     from: source.droppableId,
                     to: dest,
                     date: new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }),
+                    movedBy: currentUser ? { name: currentUser.name, role: currentUser.role } : { name: 'Sistem', role: '-' },
                     data: formValues,
                 }
             ]
         };
+
+        // ─── Auto-Transaction on Payment ──────────────────────────────────
+        // When entering invoice phase or updating bills, auto-create transactions for "Lunas" bills
+        if (formValues.bills && Array.isArray(formValues.bills)) {
+            const existingTrxs = JSON.parse(localStorage.getItem('transactions') || '[]');
+            const newTrxs = [...existingTrxs];
+            const oldBills = currentItem.bills || [];
+
+            formValues.bills.forEach((bill, idx) => {
+                const oldBill = oldBills[idx];
+                const wasAlreadyPaid = oldBill?.status === 'Lunas';
+
+                if (bill.status === 'Lunas' && !wasAlreadyPaid) {
+                    // Parse the amount
+                    const amountNum = parseInt((bill.amount || '0').toString().replace(/[^0-9]/g, ''), 10) || 0;
+
+                    const trx = {
+                        id: `trx-auto-${draggableId}-bill${bill.id || idx}-${Date.now()}`,
+                        type: 'out',
+                        title: `Pembayaran ${updatedItem.code} - ${updatedItem.title || 'Material'}`,
+                        amount: amountNum,
+                        category: 'Pengadaan Material',
+                        date: new Date().toLocaleDateString('id-ID'),
+                        projectId: (() => {
+                            // Try to find the project ID from the project name
+                            const savedProjects = JSON.parse(localStorage.getItem('projects') || '[]');
+                            const match = savedProjects.find(p => updatedItem.project && p.name === updatedItem.project);
+                            return match?.id || 'all';
+                        })(),
+                        createdBy: 'Sistem (Auto-Procurement)',
+                        notes: `Otomatis dari pengadaan ${updatedItem.code} - ${bill.label || 'Tagihan'}`,
+                        procurementRef: draggableId,
+                    };
+                    newTrxs.unshift(trx);
+                }
+            });
+
+            localStorage.setItem('transactions', JSON.stringify(newTrxs));
+        }
+
+        // Also auto-create transaction for Minor procurement report phase
+        if (dest === 'report' && formValues.reportTotal) {
+            const existingTrxs = JSON.parse(localStorage.getItem('transactions') || '[]');
+            const amountNum = parseInt((formValues.reportTotal || '0').toString().replace(/[^0-9]/g, ''), 10) || 0;
+            if (amountNum > 0) {
+                const trx = {
+                    id: `trx-auto-${draggableId}-report-${Date.now()}`,
+                    type: 'out',
+                    title: `Pengadaan Kecil ${updatedItem.code} - ${updatedItem.title || 'Material'}`,
+                    amount: amountNum,
+                    category: 'Pengadaan Kecil',
+                    date: formValues.reportDate || new Date().toLocaleDateString('id-ID'),
+                    projectId: (() => {
+                        const savedProjects = JSON.parse(localStorage.getItem('projects') || '[]');
+                        const match = savedProjects.find(p => updatedItem.project && p.name === updatedItem.project);
+                        return match?.id || 'all';
+                    })(),
+                    createdBy: 'Sistem (Auto-Procurement)',
+                    notes: `Otomatis dari laporan pengadaan kecil ${updatedItem.code}`,
+                    procurementRef: draggableId,
+                };
+                existingTrxs.unshift(trx);
+                localStorage.setItem('transactions', JSON.stringify(existingTrxs));
+            }
+        }
 
         setData(prev => ({
             ...prev,

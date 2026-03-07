@@ -8,10 +8,12 @@ const PHASE_CONFIG = {
     invoice: { label: 'Invoice', color: 'bg-orange-500', icon: 'receipt_long' },
     do: { label: 'DO (Diterima)', color: 'bg-teal-400', icon: 'local_shipping' },
     evaluation: { label: 'Evaluasi', color: 'bg-yellow-400', icon: 'star_rate' },
+    report: { label: 'Laporan', color: 'bg-amber-500', icon: 'description' },
+    asset_eval: { label: 'Evaluasi Aset', color: 'bg-purple-500', icon: 'inventory_2' },
     done: { label: 'Selesai', color: 'bg-green-500', icon: 'task_alt' },
 };
 
-const COLUMN_ORDER = ['pr', 'po', 'invoice', 'do', 'evaluation', 'done'];
+const COLUMN_ORDER = ['pr', 'po', 'invoice', 'do', 'evaluation', 'report', 'asset_eval', 'done'];
 
 // ─── Helper ───────────────────────────────────────────────────────────────────
 const isForward = (from, to) =>
@@ -94,6 +96,22 @@ function getFields(from, to, isEdit = false) {
                 { name: 'rating', label: 'Rating Vendor', type: 'rating', required: true },
                 { name: 'evalNotes', label: 'Catatan Evaluasi / Penutup', type: 'textarea', required: false, placeholder: 'Ketepatan waktu, kualitas barang, dll.' },
                 { name: 'confirmComplete', label: 'Saya konfirmasi bahwa item ini telah selesai diproses', type: 'checkbox', required: true },
+            ];
+        case 'report':
+            return [
+                { name: 'reportReceipt', label: 'Upload Bukti Bon / Nota', type: 'file', required: true },
+                { name: 'reportTotal', label: 'Total Belanja Aktual (Rp)', type: 'currency', required: true },
+                { name: 'reportDate', label: 'Tanggal Pembelian', type: 'date', required: true },
+                { name: 'reportNotes', label: 'Catatan Laporan', type: 'textarea', required: false, placeholder: 'Detail tempat beli, kondisi barang, dsb...' },
+            ];
+        case 'asset_eval':
+            return [
+                { name: 'assetTag', label: 'Nomor Tag Aset', type: 'text', required: true, placeholder: 'cth: AST-2024-001' },
+                { name: 'assetCategory', label: 'Kategori Aset', type: 'select', required: true, options: ['Peralatan', 'Kendaraan', 'Elektronik', 'Mebel', 'Mesin', 'Lainnya'] },
+                { name: 'warranty', label: 'Masa Garansi', type: 'text', required: false, placeholder: 'cth: 12 Bulan' },
+                { name: 'assetLocation', label: 'Lokasi Penempatan Aset', type: 'text', required: true, placeholder: 'cth: Gudang Proyek A' },
+                { name: 'rating', label: 'Rating Vendor', type: 'rating', required: true },
+                { name: 'confirmComplete', label: 'Aset telah dicatat & dievaluasi', type: 'checkbox', required: true },
             ];
         default:
             return [
