@@ -5,6 +5,13 @@ import Sidebar from '../components/Sidebar';
 import { useAuth } from '../context/AuthContext';
 import { projects as PROJECT_DATA } from '../data/projectData';
 
+// Extract only Kota/Kabupaten from "Kecamatan, Kota, Provinsi" format
+const getDisplayLocation = (loc) => {
+    if (!loc) return 'Lokasi Belum Ditentukan';
+    const parts = loc.split(',').map(s => s.trim());
+    return parts.length >= 2 ? parts[1] : parts[0];
+};
+
 export default function Dashboard() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -224,7 +231,7 @@ export default function Dashboard() {
                                                     <td className="px-6 py-4 font-medium text-slate-900 dark:text-white truncate">{project.name}</td>
                                                     <td className="px-6 py-4 text-slate-600 dark:text-slate-300 flex items-center gap-1 whitespace-nowrap">
                                                         <span className="material-icons-round text-[16px] text-slate-400">place</span>
-                                                        {project.location}
+                                                        {getDisplayLocation(project.location)}
                                                     </td>
                                                     <td className="px-6 py-4 text-slate-600 dark:text-slate-300 truncate">{project.client}</td>
                                                     <td className="px-6 py-4">

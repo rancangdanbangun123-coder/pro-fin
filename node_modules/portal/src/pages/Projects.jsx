@@ -5,6 +5,14 @@ import CreateProjectModal from '../components/CreateProjectModal';
 import Sidebar from '../components/Sidebar';
 import { useAuth } from '../context/AuthContext';
 
+// Extract only Kota/Kabupaten from "Kecamatan, Kota, Provinsi" format
+const getDisplayLocation = (loc) => {
+    if (!loc) return 'Lokasi Belum Ditentukan';
+    const parts = loc.split(',').map(s => s.trim());
+    // Format: [Kecamatan, Kota/Kab, Provinsi] — return the city (index 1)
+    return parts.length >= 2 ? parts[1] : parts[0];
+};
+
 export default function Projects() {
     const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
     const [statusFilter, setStatusFilter] = useState('Semua');
@@ -195,7 +203,7 @@ export default function Projects() {
                                         <Link to={`/project/${project.id}`} className="block mb-1 text-lg font-bold text-slate-900 dark:text-white hover:text-primary transition-colors">
                                             {project.name}
                                         </Link>
-                                        <p className="text-sm text-slate-500 mb-4">{project.location}</p>
+                                        <p className="text-sm text-slate-500 mb-4">{getDisplayLocation(project.location)}</p>
 
                                         <div className="space-y-4">
                                             <div>
@@ -262,7 +270,7 @@ export default function Projects() {
                                                     </div>
                                                     <div>
                                                         <div className="font-bold">{project.name}</div>
-                                                        <div className="text-xs text-slate-500">{project.location}</div>
+                                                        <div className="text-xs text-slate-500">{getDisplayLocation(project.location)}</div>
                                                     </div>
                                                 </div>
                                             </td>
