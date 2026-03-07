@@ -70,6 +70,16 @@ function getFields(from, to, isEdit = false) {
     switch (to) {
         case 'po':
             return [
+                {
+                    name: 'approvalDecision', label: 'Keputusan Approval PR', type: 'select', required: true, options: [
+                        'Disetujui - Pengadaan Tim',
+                        'Disetujui - Pengadaan Mandiri (Kecil)',
+                        'Disetujui - Pengadaan Aset',
+                        'Perlu Prasyarat',
+                        'Ditolak'
+                    ]
+                },
+                { name: 'approvalNotes', label: 'Catatan Approval', type: 'textarea', required: false, placeholder: 'Catatan dari Procurement Manager...' },
                 { name: 'poNumber', label: 'No. Purchase Order', type: 'text', required: false, placeholder: 'cth: PO-2024-001' },
                 { name: 'poValue', label: 'Nilai PO (Rp)', type: 'currency', required: true, placeholder: 'cth: Rp 14.500.000' },
                 { name: 'supplierName', label: 'Nama Supplier', type: 'vendor_select', required: true, amountField: 'poValue' },

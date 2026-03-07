@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { MATERIAL_DATABASE } from '../data/materialData';
 import { projects as fallbackProjects } from '../data/projectData';
 import SearchableSelect from './SearchableSelect';
-import { PROCUREMENT_TYPES } from '../data/procurementFlows';
 
 export default function CreatePRModal({ isOpen, onClose, projects, onSubmit }) {
     const [isVisible, setIsVisible] = useState(false);
@@ -13,8 +12,7 @@ export default function CreatePRModal({ isOpen, onClose, projects, onSubmit }) {
     // Form State
     const [selectedProject, setSelectedProject] = useState('');
     const [items, setItems] = useState([]);
-    const [combineItems, setCombineItems] = useState(false);
-    const [procurementType, setProcurementType] = useState('major');
+    const [separateItems, setSeparateItems] = useState(false);
 
     useEffect(() => {
         if (isOpen) {
@@ -68,8 +66,7 @@ export default function CreatePRModal({ isOpen, onClose, projects, onSubmit }) {
     useEffect(() => {
         if (isVisible) {
             setItems([]);
-            setCombineItems(false);
-            setProcurementType('major');
+            setSeparateItems(false);
         }
     }, [isVisible]);
 
@@ -116,8 +113,7 @@ export default function CreatePRModal({ isOpen, onClose, projects, onSubmit }) {
         onSubmit({
             project: selectedProject,
             items: items,
-            combineItems: combineItems,
-            procurementType: procurementType
+            separateItems: separateItems
         });
         onClose();
     };
@@ -149,29 +145,7 @@ export default function CreatePRModal({ isOpen, onClose, projects, onSubmit }) {
 
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8 custom-scrollbar">
-                    {/* Procurement Type Selector */}
-                    <div>
-                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Tipe Pengadaan</label>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                            {Object.values(PROCUREMENT_TYPES).map(pt => (
-                                <button
-                                    key={pt.key}
-                                    type="button"
-                                    onClick={() => setProcurementType(pt.key)}
-                                    className={`p-3 rounded-lg border-2 text-left transition-all ${procurementType === pt.key
-                                            ? `${pt.color} border-current shadow-sm`
-                                            : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
-                                        }`}
-                                >
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <span className={`material-icons-round text-base ${procurementType === pt.key ? '' : 'text-slate-400'}`}>{pt.icon}</span>
-                                        <span className="text-sm font-bold">{pt.label}</span>
-                                    </div>
-                                    <p className={`text-[10px] leading-snug ${procurementType === pt.key ? 'opacity-80' : 'text-slate-400'}`}>{pt.description}</p>
-                                </button>
-                            ))}
-                        </div>
-                    </div>
+
 
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
                         <div className="md:col-span-6">
@@ -416,8 +390,8 @@ export default function CreatePRModal({ isOpen, onClose, projects, onSubmit }) {
                                     <span className="material-icons text-sm">assignment_ind</span>
                                 </div>
                                 <div className="mt-2 text-center">
-                                    <p className="text-xs font-bold text-slate-800 dark:text-slate-200">Budi Santoso</p>
-                                    <p className="text-[10px] text-slate-500">Procurement Manager</p>
+                                    <p className="text-xs font-bold text-slate-800 dark:text-slate-200">Procurement Manager</p>
+                                    <p className="text-[10px] text-slate-500">Approval</p>
                                 </div>
                             </div>
                             <div className="flex-1 flex flex-col items-center relative z-10">
@@ -443,10 +417,10 @@ export default function CreatePRModal({ isOpen, onClose, projects, onSubmit }) {
                             <input
                                 type="checkbox"
                                 className="rounded text-primary border-slate-300 dark:border-slate-600 focus:ring-primary focus:ring-offset-0 bg-white dark:bg-surface-dark"
-                                checked={combineItems}
-                                onChange={(e) => setCombineItems(e.target.checked)}
+                                checked={separateItems}
+                                onChange={(e) => setSeparateItems(e.target.checked)}
                             />
-                            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Gabungkan item ke dalam satu kartu PR</span>
+                            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Pisahkan item ke kartu PR terpisah</span>
                         </label>
                     </div>
                     <div className="flex gap-3 w-full sm:w-auto justify-end">

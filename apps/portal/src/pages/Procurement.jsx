@@ -196,7 +196,28 @@ export default function Procurement() {
         const newItems = {};
         const newItemIds = [];
 
-        if (formData.combineItems && formData.items.length > 0) {
+        if (formData.separateItems && formData.items.length > 1) {
+            // Checkbox checked: create separate cards per item
+            formData.items.forEach((item, index) => {
+                const id = `pr-${Date.now()}-${index}`;
+                newItemIds.push(id);
+                newItems[id] = {
+                    id: id,
+                    code: `#PR-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000)}`,
+                    type: item.category,
+                    project: formData.project,
+                    title: item.name,
+                    vol: `${item.qty} ${item.unit}`,
+                    est: `Rp ${(item.price * item.qty).toLocaleString('id-ID')}`,
+                    stage: 'pr',
+                    created: new Date().toLocaleDateString('id-ID'),
+                    createdBy: currentUser ? { name: currentUser.name, email: currentUser.email, role: currentUser.role } : { name: 'Sistem', role: '-' },
+                    procurementType: formData.procurementType || 'major',
+                    fastTrack: true
+                };
+            });
+        } else if (formData.items.length > 0) {
+            // Default: combine all items into one card
             const id = `pr-${Date.now()}`;
             newItemIds.push(id);
 
@@ -221,25 +242,6 @@ export default function Procurement() {
                 rawItems: formData.items,
                 fastTrack: true
             };
-        } else {
-            formData.items.forEach((item, index) => {
-                const id = `pr-${Date.now()}-${index}`;
-                newItemIds.push(id);
-                newItems[id] = {
-                    id: id,
-                    code: `#PR-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000)}`,
-                    type: item.category,
-                    project: formData.project,
-                    title: item.name,
-                    vol: `${item.qty} ${item.unit}`,
-                    est: `Rp ${(item.price * item.qty).toLocaleString('id-ID')}`,
-                    stage: 'pr',
-                    created: new Date().toLocaleDateString('id-ID'),
-                    createdBy: currentUser ? { name: currentUser.name, email: currentUser.email, role: currentUser.role } : { name: 'Sistem', role: '-' },
-                    procurementType: formData.procurementType || 'major',
-                    fastTrack: true
-                };
-            });
         }
 
         setData(prev => ({
@@ -400,6 +402,17 @@ export default function Procurement() {
                 }
             ]
         };
+
+        // ─── Stamp procurementType from Approval Decision (PR → PO) ──────
+        if (dest === 'po' && formValues.approvalDecision) {
+            const decisionMap = {
+                'Disetujui - Pengadaan Tim': 'major',
+                'Disetujui - Pengadaan Mandiri (Kecil)': 'minor',
+                'Disetujui - Pengadaan Aset': 'asset',
+            };
+            updatedItem.procurementType = decisionMap[formValues.approvalDecision] || 'major';
+            updatedItem.approvalStatus = formValues.approvalDecision;
+        }
 
         // ─── Auto-Transaction on Payment ──────────────────────────────────
         // When entering invoice phase or updating bills, auto-create transactions for "Lunas" bills
