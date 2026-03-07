@@ -302,8 +302,8 @@ export default function RoleManagement() {
                                                         </div>
                                                     </div>
 
-                                                    {/* Individual Permissions (Clean Grid) */}
-                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-6 pl-1 pr-1">
+                                                    {/* Individual Permissions (Card Grid) */}
+                                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                                                         {groupPerms.map(perm => {
                                                             const isEnabled = perms.includes(perm.key);
                                                             return (
@@ -311,17 +311,26 @@ export default function RoleManagement() {
                                                                     key={perm.key}
                                                                     onClick={() => togglePermission(roleName, perm.key)}
                                                                     disabled={isAdmin}
-                                                                    className="flex items-center justify-between group py-1"
+                                                                    className={`flex flex-row items-center justify-between group p-3 text-left rounded-lg transition-all border ${isEnabled
+                                                                            ? 'border-primary/20 bg-primary/5 dark:bg-primary/10 dark:border-primary/30'
+                                                                            : 'border-slate-200 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-800/20'
+                                                                        } ${isAdmin ? '' : 'hover:border-primary/40 hover:bg-primary/5 dark:hover:bg-primary/20'}`}
                                                                 >
-                                                                    <div className={`text-sm transition-colors text-left ${isEnabled ? 'text-slate-700 dark:text-slate-300 font-medium' : 'text-slate-400 dark:text-slate-500'
-                                                                        } ${isAdmin ? '' : 'group-hover:text-slate-900 dark:group-hover:text-white'}`}>
-                                                                        {perm.label}
+                                                                    <div className="flex flex-col gap-0.5 pr-4">
+                                                                        <div className={`text-sm font-semibold transition-colors ${isEnabled ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'
+                                                                            }`}>
+                                                                            {perm.label}
+                                                                        </div>
+                                                                        <div className={`text-xs transition-colors ${isEnabled ? 'text-slate-600 dark:text-slate-400' : 'text-slate-400 dark:text-slate-500'
+                                                                            }`}>
+                                                                            {perm.description}
+                                                                        </div>
                                                                     </div>
 
                                                                     {/* Individual Toggle */}
-                                                                    <div className={`w-8 h-[18px] rounded-full flex items-center transition-colors duration-200 shrink-0 ${isEnabled ? 'bg-primary' : 'bg-slate-200 dark:bg-slate-700'
+                                                                    <div className={`w-9 h-5 rounded-full flex items-center transition-colors duration-200 shrink-0 ${isEnabled ? 'bg-primary' : 'bg-slate-300 dark:bg-slate-600'
                                                                         } ${isAdmin ? 'opacity-70' : ''}`}>
-                                                                        <div className={`w-3.5 h-3.5 rounded-full bg-white shadow-sm transform transition-transform duration-200 mx-0.5 ${isEnabled ? 'translate-x-[14px]' : 'translate-x-0'
+                                                                        <div className={`w-4 h-4 rounded-full bg-white shadow-sm transform transition-transform duration-200 mx-0.5 ${isEnabled ? 'translate-x-[16px]' : 'translate-x-0'
                                                                             }`}></div>
                                                                     </div>
                                                                 </button>
