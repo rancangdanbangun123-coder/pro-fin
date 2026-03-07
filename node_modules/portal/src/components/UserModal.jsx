@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getRolePermissions, saveRolePermissions } from '../context/AuthContext';
+import { getRolePermissions } from '../context/AuthContext';
 
 export default function UserModal({ isOpen, onClose, onSave, initialData }) {
     const [formData, setFormData] = useState({
@@ -11,8 +11,6 @@ export default function UserModal({ isOpen, onClose, onSave, initialData }) {
 
     const [isVisible, setIsVisible] = useState(false);
     const [animateIn, setAnimateIn] = useState(false);
-    const [isAddingRole, setIsAddingRole] = useState(false);
-    const [newRoleName, setNewRoleName] = useState('');
 
     // Get all available roles from the dynamic rolePermissions store
     const allRoles = Object.keys(getRolePermissions());
@@ -34,8 +32,6 @@ export default function UserModal({ isOpen, onClose, onSave, initialData }) {
                     role: 'Project Manager'
                 });
             }
-            setIsAddingRole(false);
-            setNewRoleName('');
             setIsVisible(true);
             const timer = setTimeout(() => setAnimateIn(true), 10);
             return () => clearTimeout(timer);
@@ -48,29 +44,7 @@ export default function UserModal({ isOpen, onClose, onSave, initialData }) {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        if (name === 'role' && value === '__add_new__') {
-            setIsAddingRole(true);
-            return;
-        }
         setFormData(prev => ({ ...prev, [name]: value }));
-    };
-
-    const handleAddRole = () => {
-        const trimmed = newRoleName.trim();
-        if (!trimmed) return;
-        if (allRoles.some(r => r.toLowerCase() === trimmed.toLowerCase())) {
-            setFormData(prev => ({ ...prev, role: allRoles.find(r => r.toLowerCase() === trimmed.toLowerCase()) }));
-            setIsAddingRole(false);
-            setNewRoleName('');
-            return;
-        }
-        // Add role to the rolePermissions store with basic access
-        const current = getRolePermissions();
-        current[trimmed] = ['view_proyek'];
-        saveRolePermissions(current);
-        setFormData(prev => ({ ...prev, role: trimmed }));
-        setIsAddingRole(false);
-        setNewRoleName('');
     };
 
     const handleSubmit = (e) => {
@@ -136,55 +110,16 @@ export default function UserModal({ isOpen, onClose, onSave, initialData }) {
 
                         <div>
                             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Wewenang / Role</label>
-                            {isAddingRole ? (
-                                <div className="space-y-2">
-                                    <div className="flex gap-2">
-                                        <input
-                                            type="text"
-                                            value={newRoleName}
-                                            onChange={(e) => setNewRoleName(e.target.value)}
-                                            onKeyDown={(e) => {
-                                                if (e.key === 'Enter') { e.preventDefault(); handleAddRole(); }
-                                                if (e.key === 'Escape') { setIsAddingRole(false); setNewRoleName(''); }
-                                            }}
-                                            autoFocus
-                                            className="flex-1 px-4 py-2 bg-slate-50 dark:bg-background-dark border border-primary/50 dark:border-primary/50 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                            placeholder="Nama role baru..."
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={handleAddRole}
-                                            disabled={!newRoleName.trim()}
-                                            className="px-3 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                        >
-                                            <span className="material-icons-round text-[18px]">check</span>
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => { setIsAddingRole(false); setNewRoleName(''); }}
-                                            className="px-3 py-2 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-                                        >
-                                            <span className="material-icons-round text-[18px]">close</span>
-                                        </button>
-                                    </div>
-                                    <p className="text-xs text-slate-400">Tekan Enter untuk menambah, Esc untuk batal</p>
-                                </div>
-                            ) : (
-                                <div className="space-y-2">
-                                    <select
-                                        name="role"
-                                        value={formData.role}
-                                        onChange={handleChange}
-                                        className="w-full px-4 py-2 bg-slate-50 dark:bg-background-dark border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                    >
-                                        {allRoles.map(role => (
-                                            <option key={role} value={role}>{role}</option>
-                                        ))}
-                                        <option disabled>─────────────────</option>
-                                        <option value="__add_new__">＋ Tambah Role Baru</option>
-                                    </select>
-                                </div>
-                            )}
+                            <select
+                                name="role"
+                                value={formData.role}
+                                onChange={handleChange}
+                                className="w-full px-4 py-2 bg-slate-50 dark:bg-background-dark border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
+                            >
+                                {allRoles.map(role => (
+                                    <option key={role} value={role}>{role}</option>
+                                ))}
+                            </select>
                         </div>
                     </form>
                 </div>
