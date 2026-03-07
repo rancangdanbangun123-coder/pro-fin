@@ -588,8 +588,8 @@ export default function MaterialDatabase() {
                     </div>
 
                     {/* Table Content */}
-                    <div className="flex-1 overflow-auto px-6 pb-20">
-                        <div className="bg-white dark:bg-surface-dark rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+                    <div className="flex-1 px-6 pb-20">
+                        <div className="bg-white dark:bg-surface-dark rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-x-auto">
                             <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
                                 <thead className="bg-slate-50 dark:bg-surface-dark/50">
                                     <tr>
