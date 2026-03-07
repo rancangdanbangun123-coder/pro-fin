@@ -56,9 +56,13 @@ export default function CategoryList() {
         const cat = categories.find(c => c.id === id);
         if (!cat) return;
 
-        // Count affected materials
+        // Count affected materials — match by BOTH name and categoryId
         const savedMaterials = JSON.parse(localStorage.getItem("materials")) || [];
-        const affectedCount = savedMaterials.filter(m => m.categoryId === id || String(m.categoryId) === String(id)).length;
+        const affectedCount = savedMaterials.filter(m =>
+            m.category === cat.name ||
+            m.categoryId === id ||
+            String(m.categoryId) === String(id)
+        ).length;
 
         if (affectedCount > 0) {
             // Show reassign modal
@@ -82,18 +86,24 @@ export default function CategoryList() {
     };
 
     const executeCategoryDelete = (id, action, targetId) => {
+        const cat = categories.find(c => c.id === id);
+        const catName = cat ? cat.name : '';
         const savedMaterials = JSON.parse(localStorage.getItem("materials")) || [];
         let materialsChanged = false;
 
         const updatedMaterials = savedMaterials.map((m) => {
-            if (m.categoryId === id || String(m.categoryId) === String(id)) {
+            const isAffected = m.category === catName ||
+                m.categoryId === id ||
+                String(m.categoryId) === String(id);
+
+            if (isAffected) {
                 materialsChanged = true;
                 if (action === 'reassign' && targetId) {
                     const targetCat = categories.find(c => String(c.id) === String(targetId));
-                    return { ...m, categoryId: String(targetId), category: targetCat ? targetCat.name : '', subCategoryId: '', subCategory: '' };
+                    return { ...m, category: targetCat ? targetCat.name : '', categoryId: String(targetId), subCategory: '', subCategoryId: '' };
                 }
                 // Clear
-                return { ...m, categoryId: '', category: '', subCategoryId: '', subCategory: '' };
+                return { ...m, category: '', categoryId: '', subCategory: '', subCategoryId: '' };
             }
             return m;
         });
@@ -118,7 +128,11 @@ export default function CategoryList() {
         if (!sub) return;
 
         const savedMaterials = JSON.parse(localStorage.getItem("materials")) || [];
-        const affectedCount = savedMaterials.filter(m => m.subCategoryId === subId || String(m.subCategoryId) === String(subId)).length;
+        const affectedCount = savedMaterials.filter(m =>
+            m.subCategory === sub.name ||
+            m.subCategoryId === subId ||
+            String(m.subCategoryId) === String(subId)
+        ).length;
 
         if (affectedCount > 0) {
             // Find sibling subcategories (same parent category)
@@ -141,17 +155,23 @@ export default function CategoryList() {
     };
 
     const executeSubcategoryDelete = (subId, action, targetId) => {
+        const sub = subCategories.find(s => s.id === subId);
+        const subName = sub ? sub.name : '';
         const savedMaterials = JSON.parse(localStorage.getItem("materials")) || [];
         let materialsChanged = false;
 
         const updatedMaterials = savedMaterials.map((m) => {
-            if (m.subCategoryId === subId || String(m.subCategoryId) === String(subId)) {
+            const isAffected = m.subCategory === subName ||
+                m.subCategoryId === subId ||
+                String(m.subCategoryId) === String(subId);
+
+            if (isAffected) {
                 materialsChanged = true;
                 if (action === 'reassign' && targetId) {
                     const targetSub = subCategories.find(s => String(s.id) === String(targetId));
-                    return { ...m, subCategoryId: String(targetId), subCategory: targetSub ? targetSub.name : '' };
+                    return { ...m, subCategory: targetSub ? targetSub.name : '', subCategoryId: String(targetId) };
                 }
-                return { ...m, subCategoryId: '', subCategory: '' };
+                return { ...m, subCategory: '', subCategoryId: '' };
             }
             return m;
         });

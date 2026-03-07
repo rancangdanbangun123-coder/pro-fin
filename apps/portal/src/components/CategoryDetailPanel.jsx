@@ -75,14 +75,19 @@ export default function CategoryDetailPanel({ category, isOpen, onClose, onUpdat
     const handleDelete = (id) => {
         if (window.confirm("Hapus sub-kategori ini?")) {
             const allSubs = JSON.parse(localStorage.getItem("subCategories")) || [];
+            const deletedSub = allSubs.find(s => s.id === id);
+            const deletedSubName = deletedSub ? deletedSub.name : '';
             const updatedSubs = allSubs.filter(s => s.id !== id);
             localStorage.setItem("subCategories", JSON.stringify(updatedSubs));
 
-            // Fix orphaned materials: clear subCategory reference
+            // Fix orphaned materials: clear subCategory reference (match by name AND id)
             const savedMaterials = JSON.parse(localStorage.getItem("materials")) || [];
             let materialsChanged = false;
             const updatedMaterials = savedMaterials.map((m) => {
-                if (m.subCategoryId === id || String(m.subCategoryId) === String(id)) {
+                const isAffected = m.subCategory === deletedSubName ||
+                    m.subCategoryId === id ||
+                    String(m.subCategoryId) === String(id);
+                if (isAffected) {
                     materialsChanged = true;
                     return { ...m, subCategoryId: '', subCategory: '' };
                 }
