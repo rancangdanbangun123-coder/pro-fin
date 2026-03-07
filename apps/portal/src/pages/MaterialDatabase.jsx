@@ -78,10 +78,21 @@ export default function MaterialDatabase() {
                 }
             });
 
+            // Auto-deactivate logic: if category/subCategory is deleted, force status to Inactive
+            const isCatDeleted = material.category && material.category !== 'Uncategorized' && material.category !== '-' && categories.length > 0 && !categories.some(c => c.name === material.category);
+            const isSubDeleted = material.subCategory && material.subCategory !== '-' && subCategories.length > 0 && !subCategories.some(s => s.name === material.subCategory);
+
+            const effectiveStatus = (isCatDeleted || isSubDeleted) ? 'Inactive' : material.status;
+
+            const baseMaterial = {
+                ...material,
+                status: effectiveStatus
+            };
+
             if (supplierPrices.length > 0) {
                 const avgPrice = supplierPrices.reduce((a, b) => a + b.price, 0) / supplierPrices.length;
                 return {
-                    ...material,
+                    ...baseMaterial,
                     marketPrice: avgPrice, // Market price = average of suppliers
                     sourceCount: supplierPrices.length,
                     originalDetails: supplierPrices,
@@ -90,12 +101,12 @@ export default function MaterialDatabase() {
             }
             // If no suppliers (or all excluded), return material with no market price
             return {
-                ...material,
+                ...baseMaterial,
                 sourceCount: 0,
                 hasSuppliers: false
             };
         });
-    }, [materials, excludedSuppliers, subcons]);
+    }, [materials, excludedSuppliers, subcons, categories, subCategories]);
 
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
